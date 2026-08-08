@@ -37,12 +37,19 @@ const contactLimiter = rateLimit({
     message: 'Demasiadas peticiones desde esta IP, intenta de nuevo en 15 minutos.'
 });
 
+app.get('/', (req, res) => {
+    res.status(200).json({
+        status: 'success',
+        message: '¡La API de ContactBook está funcionando!'
+    });
+});
+
 // 5. Rutas
 app.use('/auth', authRoutes);
 app.use('/contacts', contactLimiter, contactRoutes);
 
 // 6. Manejo de Errores (deben ir al final)
-app.all('*', notFound);
+app.use(notFound);
 app.use(errorHandler);
 
 // Exportamos la app configurada
