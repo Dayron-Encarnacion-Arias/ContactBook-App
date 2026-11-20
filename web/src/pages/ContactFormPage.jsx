@@ -2,6 +2,10 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { apiRequest } from '../api.js';
 import { useAuth } from '../auth.jsx';
+import { markFresh } from '../fresh.js';
+import { CATEGORY_LABELS } from '../components/ContactNote.jsx';
+import Magnet from '../components/Magnet.jsx';
+import { PlusIcon } from '../components/Icons.jsx';
 
 const EMPTY = { fullName: '', phone: '', email: '', category: 'personal' };
 
@@ -37,16 +41,17 @@ export default function ContactFormPage() {
     setError('');
     try {
       const body = { ...form, email: form.email.trim() || null };
-      await apiRequest(isEdit ? `/contacts/${id}` : '/contacts', {
+      const result = await apiRequest(isEdit ? `/contacts/${id}` : '/contacts', {
         method: isEdit ? 'PUT' : 'POST',
         body,
         token,
       });
+      markFresh(result.data.contact.id);
       navigate('/');
     } catch (err) {
       if (err.status === 401) {
         logout();
-        navigate('/login');
+        navigate('/login', { state: { from: isEdit ? `/contacts/${id}/edit` : '/contacts/new' } });
         return;
       }
       setError(err.message);
@@ -54,39 +59,58 @@ export default function ContactFormPage() {
     }
   }
 
-  if (loading) return <p className="muted">Cargando…</p>;
+  const initial = form.fullName.trim().charAt(0).toUpperCase() || <PlusIcon size={22} />;
 
   return (
-    <section className="narrow">
-      <h1>{isEdit ? 'Editar contacto' : 'Nuevo contacto'}</h1>
-      <form className="card form" onSubmit={handleSubmit}>
-        <label>
-          Nombre completo
-          <input value={form.fullName} onChange={update('fullName')} required autoFocus />
-        </label>
-        <label>
-          Teléfono
-          <input type="tel" value={form.phone} onChange={update('phone')} required />
-        </label>
-        <label>
-          Correo <span className="muted">(opcional)</span>
-          <input type="email" value={form.email} onChange={update('email')} />
-        </label>
-        <label>
-          Categoría
-          <select value={form.category} onChange={update('category')}>
-            <option value="personal">Personal</option>
-            <option value="trabajo">Trabajo</option>
-            <option value="otro">Otro</option>
-          </select>
-        </label>
+    <section className="pinned-page">
+      <form className={`note pinned note-${form.category}`} onSubmit={handleSubmit} aria-busy={loading}>
+        <Magnet size="lg">{initial}</Magnet>
+        <h1>{isEdit ? 'Corregir la nota' : 'Pegar un contacto'}</h1>
 
-        {error && <p className="alert">{error}</p>}
+        {loading ? (
+          <p className="soft">Despegando la nota para leerla…</p>
+        ) : (
+          <div className="fields">
+            <label className="field">
+              <span>Nombre completo</span>
+              <input value={form.fullName} onChange={update('fullName')} required autoFocus autoComplete="off" />
+            </label>
+            <label className="field">
+              <span>Teléfono</span>
+              <input type="tel" value={form.phone} onChange={update('phone')} required inputMode="tel" placeholder="809-555-0100" />
+            </label>
+            <label className="field">
+              <span>Correo <em>(opcional)</em></span>
+              <input type="email" value={form.email} onChange={update('email')} placeholder="nombre@correo.com" />
+            </label>
+
+            <fieldset className="field magnet-picker">
+              <legend>¿Con qué imán lo pegamos?</legend>
+              <div className="magnet-options">
+                {Object.entries(CATEGORY_LABELS).map(([value, label]) => (
+                  <label key={value} className={`magnet-option note-${value}`}>
+                    <input
+                      type="radio"
+                      name="category"
+                      value={value}
+                      checked={form.category === value}
+                      onChange={update('category')}
+                    />
+                    <Magnet size="sm" />
+                    {label}
+                  </label>
+                ))}
+              </div>
+            </fieldset>
+          </div>
+        )}
+
+        {error && <p className="alert" role="alert">{error}</p>}
 
         <div className="form-actions">
-          <Link to="/" className="button button-ghost">Cancelar</Link>
-          <button type="submit" className="button" disabled={saving}>
-            {saving ? 'Guardando…' : isEdit ? 'Guardar cambios' : 'Crear contacto'}
+          <Link to="/" className="button button-quiet">Cancelar</Link>
+          <button type="submit" className="button" disabled={saving || loading}>
+            {saving ? 'Pegando…' : isEdit ? 'Guardar cambios' : 'Pegar en la nevera'}
           </button>
         </div>
       </form>

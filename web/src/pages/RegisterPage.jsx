@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { apiRequest } from '../api.js';
+import Magnet from '../components/Magnet.jsx';
+import { PlusIcon } from '../components/Icons.jsx';
 
 export default function RegisterPage() {
   const navigate = useNavigate();
@@ -26,29 +28,36 @@ export default function RegisterPage() {
   }
 
   return (
-    <section className="narrow">
-      <h1>Crear cuenta</h1>
-      <form className="card form" onSubmit={handleSubmit}>
-        <label>
-          Nombre
-          <input value={form.name} onChange={update('name')} required autoFocus />
-        </label>
-        <label>
-          Correo
-          <input type="email" value={form.email} onChange={update('email')} required />
-        </label>
-        <label>
-          Contraseña <span className="muted">(mínimo 6 caracteres)</span>
-          <input type="password" value={form.password} onChange={update('password')} minLength={6} required />
-        </label>
-        {error && <p className="alert">{error}</p>}
-        <button type="submit" className="button" disabled={sending}>
-          {sending ? 'Creando…' : 'Crear cuenta'}
-        </button>
+    <section className="pinned-page">
+      <form className="note pinned note-trabajo" onSubmit={handleSubmit}>
+        <Magnet size="lg">{form.name.trim().charAt(0).toUpperCase() || <PlusIcon size={22} />}</Magnet>
+        <h1>Tu propia nevera</h1>
+        <p className="soft">Crea una cuenta para empezar a pegar contactos.</p>
+
+        <div className="fields">
+          <label className="field">
+            <span>Nombre</span>
+            <input value={form.name} onChange={update('name')} required autoFocus autoComplete="name" />
+          </label>
+          <label className="field">
+            <span>Correo</span>
+            <input type="email" value={form.email} onChange={update('email')} required autoComplete="email" />
+          </label>
+          <label className="field">
+            <span>Contraseña <em>(mínimo 6 caracteres)</em></span>
+            <input type="password" value={form.password} onChange={update('password')} minLength={6} required autoComplete="new-password" />
+          </label>
+        </div>
+
+        {error && <p className="alert" role="alert">{error}</p>}
+
+        <div className="form-actions">
+          <Link to="/login" className="text-button">Ya tengo cuenta</Link>
+          <button type="submit" className="button" disabled={sending}>
+            {sending ? 'Creando…' : 'Crear cuenta'}
+          </button>
+        </div>
       </form>
-      <p className="muted center">
-        ¿Ya tienes cuenta? <Link to="/login">Entra</Link>
-      </p>
     </section>
   );
 }

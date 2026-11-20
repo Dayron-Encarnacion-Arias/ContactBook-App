@@ -5,6 +5,21 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <title>ContactBook</title>
+    <script>
+      // Aplica el esmalte guardado antes de pintar, para que no parpadee el color
+      (function () {
+        var E = { menta: [0.87, 0.075, 168, "light"], mantequilla: [0.905, 0.1, 95, "light"], cereza: [0.53, 0.17, 24, "bold"], medianoche: [0.25, 0.035, 262, "dark"] };
+        try {
+          var t = JSON.parse(localStorage.getItem("contactbook.enamel"));
+          var e = t && (t.id === "custom" ? [0.8, 0.115, t.hue, "light"] : E[t.id]);
+          if (!e && matchMedia("(prefers-color-scheme: dark)").matches) e = E.medianoche;
+          if (!e) return;
+          var r = document.documentElement.style;
+          r.setProperty("--el", e[0]); r.setProperty("--ec", e[1]); r.setProperty("--eh", e[2]);
+          document.documentElement.dataset.tone = e[3];
+        } catch (err) {}
+      })();
+    </script>
   </head>
   <body>
     <div id="root"></div>

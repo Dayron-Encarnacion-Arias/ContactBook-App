@@ -1,5 +1,6 @@
 import { Link, NavLink, Navigate, Route, Routes, useLocation } from 'react-router-dom';
 import { useAuth } from './auth.jsx';
+import EnamelPicker from './components/EnamelPicker.jsx';
 import ContactsPage from './pages/ContactsPage.jsx';
 import ContactFormPage from './pages/ContactFormPage.jsx';
 import LoginPage from './pages/LoginPage.jsx';
@@ -18,21 +19,21 @@ export default function App() {
   const { user, logout } = useAuth();
 
   return (
-    <div className="shell">
-      <header className="topbar">
-        <Link to="/" className="brand">
-          <span className="brand-mark" aria-hidden="true">CB</span>
+    <div className="fridge">
+      {/* La cabecera es la puerta del congelador */}
+      <header className="freezer">
+        <Link to="/" className="badge-brand" aria-label="ContactBook, inicio">
           ContactBook
         </Link>
-        <nav className="nav">
+        <nav className="nav" aria-label="Principal">
           <NavLink to="/" end>Contactos</NavLink>
           {user ? (
             <>
               <span className="nav-user">
                 {user.name}
-                {user.role === 'admin' && <span className="badge">admin</span>}
+                {user.role === 'admin' && <span className="role">admin</span>}
               </span>
-              <button type="button" className="link-button" onClick={logout}>Salir</button>
+              <button type="button" className="text-button" onClick={logout}>Salir</button>
             </>
           ) : (
             <>
@@ -41,9 +42,10 @@ export default function App() {
             </>
           )}
         </nav>
+        <EnamelPicker />
       </header>
 
-      <main className="content">
+      <main className="door">
         <Routes>
           <Route path="/" element={<ContactsPage />} />
           <Route path="/login" element={<LoginPage />} />

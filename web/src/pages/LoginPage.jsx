@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { useAuth } from '../auth.jsx';
+import Magnet from '../components/Magnet.jsx';
 
 export default function LoginPage() {
   const { login } = useAuth();
@@ -25,26 +26,33 @@ export default function LoginPage() {
   }
 
   return (
-    <section className="narrow">
-      <h1>Entrar</h1>
-      {location.state?.registered && <p className="notice">Cuenta creada. Ya puedes entrar.</p>}
-      <form className="card form" onSubmit={handleSubmit}>
-        <label>
-          Correo
-          <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus />
-        </label>
-        <label>
-          Contraseña
-          <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
-        </label>
-        {error && <p className="alert">{error}</p>}
-        <button type="submit" className="button" disabled={sending}>
-          {sending ? 'Entrando…' : 'Entrar'}
-        </button>
+    <section className="pinned-page">
+      <form className="note pinned note-personal" onSubmit={handleSubmit}>
+        <Magnet size="lg">C</Magnet>
+        <h1>Abre la nevera</h1>
+        <p className="soft">Entra para pegar, corregir y despegar contactos.</p>
+        {location.state?.registered && <p className="notice" role="status">Cuenta creada. Ya puedes entrar.</p>}
+
+        <div className="fields">
+          <label className="field">
+            <span>Correo</span>
+            <input type="email" value={email} onChange={(e) => setEmail(e.target.value)} required autoFocus autoComplete="email" />
+          </label>
+          <label className="field">
+            <span>Contraseña</span>
+            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required autoComplete="current-password" />
+          </label>
+        </div>
+
+        {error && <p className="alert" role="alert">{error}</p>}
+
+        <div className="form-actions">
+          <Link to="/register" className="text-button">Crear una cuenta</Link>
+          <button type="submit" className="button" disabled={sending}>
+            {sending ? 'Entrando…' : 'Entrar'}
+          </button>
+        </div>
       </form>
-      <p className="muted center">
-        ¿No tienes cuenta? <Link to="/register">Crea una</Link>
-      </p>
     </section>
   );
 }
