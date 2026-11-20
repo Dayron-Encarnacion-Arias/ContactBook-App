@@ -39,6 +39,28 @@ La API espera a que Mongo esté `healthy` antes de arrancar y, al iniciar, siemb
 
 Para probarlo: abre http://localhost:8080, entra con el admin del `.env` (o crea una cuenta) y agrega un contacto.
 
+## Capturas
+
+En [`docs/capturas/`](docs/capturas/):
+
+| Archivo | Qué muestra |
+|---|---|
+| `01-docker-compose-ps.png` | `docker compose ps` con mongo, api y web en estado `healthy` |
+| `02-contactbook-localhost-8080.png` | ContactBook en http://localhost:8080 con contactos creados |
+| `03-tema-cereza.png`, `04-tema-medianoche.png` | Otros esmaltes (temas) de la interfaz |
+| `05-nuevo-contacto.png` | Formulario para pegar un contacto nuevo |
+
+## El diseño: la puerta de la nevera
+
+La interfaz imita la puerta de la nevera, donde en casa se pegan los números que importan:
+
+- Cada contacto es una nota sostenida por un **imán del color de su categoría** (azul personal, ámbar trabajo, magenta otro), con la inicial grabada.
+- **Esmaltes** (temas): Menta, Mantequilla, Cereza y Medianoche, más un dial **«A tu gusto»** que repinta toda la página en vivo. Toda la paleta sale de tres números OKLCH, y el cambio de esmalte se «vierte» de arriba abajo.
+- Al **buscar o filtrar**, las notas que no coinciden se despegan y caen y las demás se reacomodan (View Transitions).
+- Las **palabras guía** fijas arriba muestran el primer y el último nombre a la vista, como en un diccionario.
+- Lo **recién pegado** queda marcado hasta que lo ves.
+- Respeta `prefers-reduced-motion`.
+
 ## Detener y borrar los datos
 
 ```bash
