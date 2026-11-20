@@ -1,0 +1,73 @@
+# ContactBook: React + Node.js + MongoDB
+# Todas las credenciales llegan del archivo .env (ver .env.example)
+
+name: contactbook
+
+services:
+  mongo:
+    image: mongo:7
+    restart: unless-stopped
+    environment:
+      MONGO_INITDB_ROOT_USERNAME: ${MONGO_USER:?Falta MONGO_USER en .env}
+      MONGO_INITDB_ROOT_PASSWORD: ${MONGO_PASSWORD:?Falta MONGO_PASSWORD en .env}
+      MONGO_INITDB_DATABASE: ${MONGO_DB:-contactbook}
+    volumes:
+      - mongo-data:/data/db
+    networks:
+      - contactbook-net
+    # Sin "ports": Mongo solo es accesible dentro de la red de Compose
+    healthcheck:
+      test: ["CMD", "mongosh", "--quiet", "--eval", "db.adminCommand('ping').ok"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 20s
+
+  api:
+    build:
+      context: ./api
+    restart: unless-stopped
+    environment:
+      PORT: 3000
+      MONGO_URI: mongodb://${MONGO_USER}:${MONGO_PASSWORD}@mongo:27017/${MONGO_DB:-contactbook}?authSource=admin
+      JWT_SECRET: ${JWT_SECRET:?Falta JWT_SECRET en .env}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:?Falta ADMIN_EMAIL en .env}
+      ADMIN_PASSWORD: ${ADMIN_PASSWORD:?Falta ADMIN_PASSWORD en .env}
+      CORS_ORIGIN: ${CORS_ORIGIN:-http://localhost:8080}
+    ports:
+      - "3000:3000"
+    depends_on:
+      mongo:
+        condition: service_healthy
+    networks:
+      - contactbook-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:3000/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+      start_period: 15s
+
+  web:
+    build:
+      context: ./web
+      args:
+        VITE_API_URL: ${VITE_API_URL:-http://localhost:3000}
+    restart: unless-stopped
+    ports:
+      - "8080:80"
+    depends_on:
+      - api
+    networks:
+      - contactbook-net
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1/"]
+      interval: 15s
+      timeout: 5s
+      retries: 3
+
+volumes:
+  mongo-data:
+
+networks:
+  contactbook-net:
