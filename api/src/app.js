@@ -7,22 +7,25 @@ const path = require('path');
 const rateLimit = require('express-rate-limit');
 
 // Importaciones de archivos locales
-const { errorHandler, notFound } = require('./src/middlewares/errorHandler');
-const { requestTimer } = require('./src/middlewares/customMiddleware');
-const authRoutes = require('./src/routes/authRoutes');
-const contactRoutes = require('./src/routes/contactRoutes');
+const { errorHandler, notFound } = require('./middlewares/errorHandler');
+const { requestTimer } = require('./middlewares/customMiddleware');
+const authRoutes = require('./routes/authRoutes');
+const contactRoutes = require('./routes/contactRoutes');
 
 const app = express();
 
-// 1. Configuración de Morgan con stream hacia logs/access.log
+// 1. Configuración de Morgan con stream hacia logs/access.log (la carpeta se crea si no existe)
+const logsDir = path.join(__dirname, '..', 'logs');
+fs.mkdirSync(logsDir, { recursive: true });
 const accessLogStream = fs.createWriteStream(
-    path.join(__dirname, 'logs', 'access.log'),
+    path.join(logsDir, 'access.log'),
     { flags: 'a' } // 'a' significa append (agrega al final del archivo sin sobreescribir)
 );
 
 // 2. Middlewares Globales de terceros
 app.use(helmet());
-app.use(cors());
+// CORS_ORIGIN limita qué frontend puede llamar a la API (por defecto, cualquiera)
+app.use(cors({ origin: process.env.CORS_ORIGIN || '*' }));
 app.use(morgan('combined', { stream: accessLogStream })); // Registra protocolos HTTP y detalles en el archivo
 app.use(morgan('dev')); // Mantiene la salida visual en la consola
 app.use(express.json());
