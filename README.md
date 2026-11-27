@@ -23,8 +23,8 @@ Los tres checks son **obligatorios**: la rama `main` tiene una regla que exige p
 
 Una matriz construye y publica las dos imágenes en GitHub Container Registry, con caché de capas `type=gha`:
 
-- `ghcr.io/dayron-encarnacion-arias/taskflow-api`
-- `ghcr.io/dayron-encarnacion-arias/taskflow-web`
+- `ghcr.io/dayron-encarnacion-arias/contactbook-api`
+- `ghcr.io/dayron-encarnacion-arias/contactbook-web`
 
 | Evento | Tags publicados |
 |---|---|
@@ -32,8 +32,8 @@ Una matriz construye y publica las dos imágenes en GitHub Container Registry, c
 | Tag de Git `v1.0.0` | `1.0.0` y `1.0` |
 
 ```bash
-docker pull ghcr.io/dayron-encarnacion-arias/taskflow-api:latest
-docker pull ghcr.io/dayron-encarnacion-arias/taskflow-web:1.0.0
+docker pull ghcr.io/dayron-encarnacion-arias/contactbook-api:latest
+docker pull ghcr.io/dayron-encarnacion-arias/contactbook-web:1.0.0
 ```
 
 ### Secrets y variables
