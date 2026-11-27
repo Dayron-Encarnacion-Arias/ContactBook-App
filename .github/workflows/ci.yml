@@ -1,0 +1,97 @@
+# CI: valida cada pull request hacia main y cada push a main
+name: CI
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [main]
+
+# El CI solo necesita leer el código
+permissions:
+  contents: read
+
+# Si subes otro commit al mismo PR, cancela la ejecución anterior
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  # ---------- API: lint y tests ----------
+  api:
+    name: api
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: api
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node 22 con caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: api/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+  # ---------- Web: lint, tests y build ----------
+  web:
+    name: web
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: web
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Instalar Node 22 con caché de npm
+        uses: actions/setup-node@v7
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: web/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Tests
+        run: npm test
+
+      - name: Build
+        run: npm run build
+        env:
+          # Variable del repositorio (Settings › Secrets and variables › Actions › Variables)
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
+
+  # ---------- Docker: solo si api y web pasaron ----------
+  docker:
+    name: docker
+    needs: [api, web]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      # docker-compose.yml exige variables del .env; en CI se usan las de ejemplo
+      # (solo para construir: no son credenciales reales)
+      - name: Crear .env a partir de .env.example
+        run: cp .env.example .env
+
+      - name: Construir las imágenes
+        run: docker compose build
+        env:
+          VITE_API_URL: ${{ vars.VITE_API_URL }}
