@@ -2,6 +2,46 @@
 
 Libreta de contactos con **React** (frontend), **Node.js + Express** (API) y **MongoDB** (base de datos), contenerizada con Docker Compose para que corra igual en cualquier máquina.
 
+[![CI](https://github.com/Dayron-Encarnacion-Arias/ContactBook-App/actions/workflows/ci.yml/badge.svg)](https://github.com/Dayron-Encarnacion-Arias/ContactBook-App/actions/workflows/ci.yml)
+[![CD](https://github.com/Dayron-Encarnacion-Arias/ContactBook-App/actions/workflows/cd.yml/badge.svg)](https://github.com/Dayron-Encarnacion-Arias/ContactBook-App/actions/workflows/cd.yml)
+
+## Pipeline CI/CD
+
+El proyecto usa GitHub Actions con dos workflows en `.github/workflows/`.
+
+### En cada pull request hacia `main` (`ci.yml`)
+
+| Job | Qué hace |
+|---|---|
+| `api` | `npm ci`, `npm run lint` (ESLint) y `npm test` (Vitest + Supertest) en `api/` |
+| `web` | `npm ci`, `npm run lint`, `npm test` y `npm run build` en `web/` |
+| `docker` | Cuando `api` y `web` pasan, construye las imágenes con `docker compose build` |
+
+Los tres checks son **obligatorios**: la rama `main` tiene una regla que exige pull request, que `api`, `web` y `docker` estén en verde y bloquea el force push. Un PR con un check en rojo no se puede fusionar.
+
+### Al hacer merge a `main` o crear un tag `v*.*.*` (`cd.yml`)
+
+Una matriz construye y publica las dos imágenes en GitHub Container Registry, con caché de capas `type=gha`:
+
+- `ghcr.io/dayron-encarnacion-arias/taskflow-api`
+- `ghcr.io/dayron-encarnacion-arias/taskflow-web`
+
+| Evento | Tags publicados |
+|---|---|
+| Merge a `main` | `sha-<commit>` y `latest` |
+| Tag de Git `v1.0.0` | `1.0.0` y `1.0` |
+
+```bash
+docker pull ghcr.io/dayron-encarnacion-arias/taskflow-api:latest
+docker pull ghcr.io/dayron-encarnacion-arias/taskflow-web:1.0.0
+```
+
+### Secrets y variables
+
+- El login a GHCR usa `secrets.GITHUB_TOKEN`, el token automático de GitHub Actions: no hay tokens personales en el repositorio.
+- `VITE_API_URL` es una **variable del repositorio** (`Settings › Secrets and variables › Actions › Variables`) que llega al build del frontend como `build-arg`.
+- Ningún secreto se escribe en los workflows ni se imprime en los logs.
+
 ## Requisitos previos
 
 - [Docker Desktop](https://www.docker.com/products/docker-desktop/) (o Docker Engine) con **Docker Compose v2** (`docker compose version`).
