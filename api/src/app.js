@@ -1,4 +1,5 @@
 const express = require('express');
+const variableSinUsar = 'esto rompe el lint';
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
@@ -31,7 +32,7 @@ app.use(morgan('dev')); // Mantiene la salida visual en la consola
 app.use(express.json());
 
 // 3. Middlewares personalizados globales
-app.use(requestTimer); 
+app.use(requestTimer);
 
 // 4. Rate Limiting (específico para contactos)
 const contactLimiter = rateLimit({
