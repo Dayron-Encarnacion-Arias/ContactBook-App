@@ -1,0 +1,67 @@
+# CD: publica las imágenes en GitHub Container Registry (ghcr.io)
+name: CD
+
+on:
+  push:
+    branches: [main]        # cada merge a main
+    tags: ['v*.*.*']        # cada versión: v1.0.0, v1.2.3...
+  # Sin pull_request: el CD nunca corre en un PR
+
+# Permisos mínimos del GITHUB_TOKEN para este workflow
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    name: publish (${{ matrix.image }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - image: taskflow-api
+            context: ./api
+          - image: taskflow-web
+            context: ./web
+
+    steps:
+      - name: Descargar el código
+        uses: actions/checkout@v7
+
+      - name: Preparar Docker Buildx
+        uses: docker/setup-buildx-action@v4
+
+      # El login usa el token automático de GitHub: ningún token personal en el código
+      - name: Login en GHCR
+        uses: docker/login-action@v4
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      # Calcula los tags de la imagen según el evento (push a main o tag v*.*.*)
+      - name: Calcular tags y etiquetas
+        id: meta
+        uses: docker/metadata-action@v6
+        with:
+          images: ghcr.io/dayron-encarnacion-arias/${{ matrix.image }}
+          tags: |
+            type=sha,prefix=sha-
+            type=raw,value=latest,enable={{is_default_branch}}
+            type=semver,pattern={{version}}
+            type=semver,pattern={{major}}.{{minor}}
+
+      - name: Construir y publicar
+        uses: docker/build-push-action@v7
+        with:
+          context: ${{ matrix.context }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }}
+          labels: ${{ steps.meta.outputs.labels }}
+          # La URL de la API se incrusta en el frontend al compilar (la API la ignora)
+          build-args: |
+            VITE_API_URL=${{ vars.VITE_API_URL }}
+          # Caché de capas en GitHub Actions, una por imagen
+          cache-from: type=gha,scope=${{ matrix.image }}
+          cache-to: type=gha,mode=max,scope=${{ matrix.image }}
