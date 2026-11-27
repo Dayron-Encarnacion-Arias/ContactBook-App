@@ -1,5 +1,4 @@
 const express = require('express');
-const variableSinUsar = 'esto rompe el lint';
 const helmet = require('helmet');
 const cors = require('cors');
 const morgan = require('morgan');
