@@ -31,7 +31,7 @@ app.use(morgan('dev')); // Mantiene la salida visual en la consola
 app.use(express.json());
 
 // 3. Middlewares personalizados globales
-app.use(requestTimer); 
+app.use(requestTimer);
 
 // 4. Rate Limiting (específico para contactos)
 const contactLimiter = rateLimit({
