@@ -54,8 +54,8 @@ No hace falta instalar Node ni MongoDB: todo corre en contenedores.
 
 ```bash
 # 1. Clonar el repositorio
-git clone https://github.com/Dayron-Encarnacion-Arias/contactbook-api.git
-cd contactbook-api
+git clone https://github.com/Dayron-Encarnacion-Arias/ContactBook-App.git
+cd ContactBook-App
 
 # 2. Crear el .env a partir de la plantilla (y cambiar los valores)
 cp .env.example .env          # en PowerShell: Copy-Item .env.example .env
